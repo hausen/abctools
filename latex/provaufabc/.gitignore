@@ -6,3 +6,5 @@
 *.pdf
 *.dvi
 *.ps
+_tmp*
+out/
