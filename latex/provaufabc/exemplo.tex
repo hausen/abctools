@@ -1,0 +1,107 @@
+%\def\numprova{A01}
+% Se você quer dar um número para cada prova, descomente a
+% linha acima
+% se quiser totalizar o número de questões e de pontos,
+% use a opção addpoints
+\documentclass[addpoints,11pt]{provaufabc}
+\usepackage[utf8]{inputenc}
+\usepackage{enumerate}
+\usepackage{amssymb,amsmath}
+
+% Nome da prova
+\title{Primeira Prova da Disciplina Exemplo}
+
+% data da prova
+\date{\today}
+
+% autor
+\author{Professor Rodrigo Hausen}
+
+\begin{document}
+% O vspace abaixo é só para economizar espaço na primeira
+% folha. Você pode removê-lo.
+\vspace*{-1cm}
+
+% coloca o cabeçalho na folha de questões
+\makeheader
+
+% use o environment instructions para colocar as instruções
+% para a prova
+\begin{instructions}
+% os labels totalquestions e totalpoints indicam,
+% respectivamente, o número total de questões e pontos
+\item A prova possui \ref{totalquestions} questões, com um
+      total de \ref{totalpoints} pontos.
+\item Escreva o seu nome e RA no espaço acima.
+\item Após terminar a prova, entregue \textbf{todas} as folhas
+      que você tiver, incluindo a folha de questões, o caderno
+      de respostas e quaisquer folhas de rascunho que o
+      professor tenha lhe fornecido.
+\item Leia todas as questões antes de começar a fazer a prova.
+\item As respostas podem ser escritas a lápis ou a caneta, como
+      você achar melhor.
+\item Não serão aceitas respostas sem justificativa.
+\item Você pode resolver as questões na ordem que for melhor
+      para você, mas mantenha a organização da prova. Deixe bem
+      claro qual questão você está respondendo.
+\item O verso desta folha pode ser usado para respostas (se
+      você precisar de espaço) ou para rascunho. Se for usado
+      para respostas, escreva ``respostas'' no verso.
+\item Nem pense em colar; \textbf{cola = conceito F na
+      disciplina}. Não se engane: \textbf{se você colar, você
+      será descoberto!}
+\end{instructions}
+
+% use o environment cheatsheet para colocar dicas e lembretes
+% de fórmulas
+\begin{cheatsheet}
+\sloppy
+\item A equação do segundo grau $ax^2 + bx + c = 0$ tem no
+      máximo duas soluções:
+      $\displaystyle x_1 = \frac{-b - \sqrt{b^2 - 4ac}}{2a}$ e
+      $\displaystyle x_2 = \frac{-b + \sqrt{b^2 - 4ac}}{2a}$.
+
+% você pode dar um rótulo para 
+\item Sejam $a, b$ os comprimentos dos catetos de um triângulo
+      retângulo, e $c$ o comprimento de sua hipotenusa. Vale a
+      identidade: $a^2 + b^2 = c^2$. Isto pode ser útil
+      nas questões \ref{quest:triangulo}\ref{subquest:triangulo1}
+      e \ref{quest:triangulo}\ref{subquest:triangulo2}.
+\end{cheatsheet}
+
+% use question para definir as questões
+\begin{question}
+\label{quest:triangulo}
+    Para os triângulos abaixo, considere que $a$ e $b$ são os
+    comprimentos dos catetos. Determine o comprimento da
+    hipotenusa.
+
+    % para uma questão dividida em várias partes, use o
+    % environment subquestion.
+    %
+    % o environment subquestion recebe um parâmetro opcional,
+    % o número de pontos da subquestão. Use o caractere ponto
+    % "." como separador decimal.
+    \begin{subquestion}[1.5]
+        \label{subquest:triangulo1}
+        $a = 1, b = 1$
+    \end{subquestion}
+    \begin{subquestion}[2.5]
+        \label{subquest:triangulo2}
+        $a = 3, b = 4$
+    \end{subquestion}
+\end{question}
+
+% O environment question também pode receber o número de
+% pontos da questão como parâmetro opcional. Se você
+% definir o número de pontos na questão, não é permitido
+% definir o número de pontos em uma subquestão.
+\begin{question}[3.75]
+Determine as raízes do polinômio $-x^2 + 2x + 1$.
+\end{question}
+
+\begin{question}[2.25]
+Qual é a cor do cavalo branco de Napoleão?
+\end{question}
+
+\end{document}
