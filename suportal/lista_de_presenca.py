@@ -3,11 +3,11 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm, inch
 from reportlab.lib.pagesizes import A3, A4
-from datetime import date
-import sys, getopt, fileinput
+import datetime, fileinput, getopt, locale, re, sys
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
+locale.setlocale(locale.LC_ALL, "pt_BR.utf8")
 
 class Margins:
   def __init__(self, left, right, top, bottom):
@@ -17,7 +17,8 @@ class Margins:
     self.bottom = bottom
 
 # fontSize in pt
-def newPdfCanvas(fileName = sys.stdout, pageSize = A4, fontSize = 12,
+def newPdfCanvas(fileName = sys.stdout, pageSize = A4,
+                 fontFamily = "Helvetica", fontSize = 12,
                  marginLeft = 1.0*cm, marginRight = 1.0*cm,
                  marginTop = 1.85*cm, marginBottom = 1.85*cm):
   p = canvas.Canvas(fileName, pagesize = pageSize)
@@ -25,6 +26,7 @@ def newPdfCanvas(fileName = sys.stdout, pageSize = A4, fontSize = 12,
   p.totalPages = 0
   p.pageWidth = pageSize[0]
   p.pageHeight = pageSize[1]
+  p.fontFamily = fontFamily
   p.fontSize = fontSize
   p.margin = Margins(marginLeft, marginRight, marginTop, marginBottom)
   return p
@@ -39,7 +41,8 @@ def drawHeader(p, left = "", center = "", right = ""):
   p.drawRightString(p.pageWidth - p.margin.right,
                     headerBottom + 2*p.fontSize, right)
   p.drawString(p.margin.left + .2*cm, headerBottom + p.fontSize/3, "RA")
-  p.drawString(p.margin.left + 2.5*cm, headerBottom + p.fontSize/3, "Nome")
+  p.drawString(p.margin.left + 6*p.fontSize, headerBottom + p.fontSize/3,
+               "Nome")
   p.drawString(pageCenter, headerBottom + p.fontSize/3, "Assinatura")
 
 def drawFooter(p, center = ""):
@@ -51,11 +54,18 @@ def drawFooter(p, center = ""):
                       "Página %d/%d" % (p.pageNumber, p.totalPages))
 
 def drawPage(p, students, headerLeft = "", headerCenter = "",
-             paginateOnly = False):
+             date = None, footer = None, paginateOnly = False):
   p.setLineWidth(.3)
-  p.setFont("Helvetica", p.fontSize)
+  p.setFont(p.fontFamily, p.fontSize)
   maxRowHeight = 1.5*cm
   minRowHeight = 0.74*cm
+
+  if date is None:
+    date = datetime.date.today().strftime("%d/%m/%Y")
+
+  if footer is None:
+    footer = "Se o seu nome não estiver na lista, " + \
+             "não o adicione! Fale com o professor ao final da aula."
 
   studentsLeft = []
 
@@ -90,7 +100,7 @@ def drawPage(p, students, headerLeft = "", headerCenter = "",
         (ra,nome) = student
         pos -= rowHeight
         p.drawString(p.margin.left + .2*cm, pos+raiseText, "%08d" % ra)
-        p.drawString(p.margin.left + 2.5*cm, pos+raiseText, nome)
+        p.drawString(p.margin.left + 6*p.fontSize, pos+raiseText, nome)
         p.line(p.margin.left, pos, p.pageWidth - p.margin.right, pos)
         p.line(p.margin.left, pos, p.margin.left, pos + rowHeight)
         p.line(p.pageWidth - p.margin.right, pos,
@@ -98,10 +108,8 @@ def drawPage(p, students, headerLeft = "", headerCenter = "",
 
       drawHeader(p, left = headerLeft,
                     center = headerCenter,
-                    right = date.today().strftime("%d/%m/%Y"))
-      drawFooter(p, center = "Se o seu nome não estiver na lista, " + 
-                             "não o adicione! Fale com o professor ao " +
-                             "final da aula.")
+                    right = date)
+      drawFooter(p, center = footer)
 
   if diffWidth > 0:
     if p.pageNumber % 2 == 1:
@@ -120,11 +128,15 @@ def drawPage(p, students, headerLeft = "", headerCenter = "",
   return studentsLeft
 
 def makePdf(students, headerLeft = "", headerCenter = "",
-            fileName = sys.stdout, pageSize = A4):
+            date = None, footer = None, fileName = sys.stdout,
+            fontFamily = None, pageSize = A4):
   headerLeft = headerLeft.replace(" -- ", " – ")
   headerCenter = headerCenter.replace(" -- ", " – ")
 
   p = newPdfCanvas(fileName, pageSize = pageSize)
+
+  if fontFamily is not None:
+    p.fontFamily = fontFamily
 
   studentsCopy = students
   studentsInPage = []
@@ -139,7 +151,7 @@ def makePdf(students, headerLeft = "", headerCenter = "",
   
   if p.totalPages == 1:
     drawPage(p,students, headerLeft = headerLeft,
-             headerCenter = headerCenter)
+             headerCenter = headerCenter, date = date, footer = footer)
   else:
     if studentsInPage[-1] < studentsInPage[0]-1:
     # distribute students more equitably
@@ -156,7 +168,7 @@ def makePdf(students, headerLeft = "", headerCenter = "",
     for inPage in studentsInPage:
       high = min(low + inPage,len(students))
       drawPage(p, students[low:high], headerLeft = headerLeft,
-               headerCenter = headerCenter)
+               headerCenter = headerCenter, date = date, footer = footer)
       low = high
   
   p.save()
@@ -170,7 +182,10 @@ def getColumns(line):
       cols = line.split(";")
   return cols
 
-def readStudents(infile = sys.stdin):
+whiteSpaceRegex = re.compile(r"\s+")
+articleRegex = re.compile(" D(a|e|i|o|as|os) ")
+
+def readStudents(infile = sys.stdin, capitalize = True):
   students = []
   colRA = None
   colNome = None
@@ -202,6 +217,10 @@ def readStudents(infile = sys.stdin):
         nome = cols[colNome]
       except ValueError:
         continue
+    nome = whiteSpaceRegex.sub(" ", nome.strip())
+    orig = nome
+    if capitalize:
+      nome = articleRegex.sub(r" d\1 ", unicode(nome).title())
     students.append((ra, nome))
   return students
 
@@ -216,8 +235,12 @@ def parsePaper(paper):
 def usage(exitStatus = 0):
   print >> sys.stderr, "Usage: lista.py [-i inputfile] [-o outputfile]"
   print >> sys.stderr, "                [-l header-left] [-c header-center]"
-  print >> sys.stderr, "                [-p paper]"
+  print >> sys.stderr, "                [-p paper] [-d date] [-f footer]"
+  print >> sys.stderr, "                [-t type-face]"
   print >> sys.stderr, "       paper is one of A4 or A3"
+  print >> sys.stderr, "       type-face is one of %s" % \
+                       canvas.Canvas(sys.stdout).getAvailableFonts()
+
   sys.exit(exitStatus)
 
 if __name__ == '__main__':
@@ -226,11 +249,15 @@ if __name__ == '__main__':
   headerLeft = ""
   headerCenter = ""
   paper = A4
+  date = None
+  footer = None
+  fontFamily = None
 
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hi:o:l:c:p:",
+    opts, args = getopt.getopt(sys.argv[1:], "hi:o:l:c:p:d:f:t:",
                                ["ifile=", "ofile=", "header-left=",
-                                "header-center=", "paper="])
+                                "header-center=", "paper=", "date=",
+                                "footer=", "type-face="])
   except getopt.GetoptError:
     usage(exitStatus = 2)
 
@@ -251,8 +278,14 @@ if __name__ == '__main__':
       headerCenter = arg
     elif opt in ("-p", "--paper"):
       paper = parsePaper(arg)
+    elif opt in ("-d", "--date"):
+      date = arg
+    elif opt in ("-f", "--footer"):
+      footer = arg
+    elif opt in ("-t", "--type-face"):
+      fontFamily = arg
 
   students = readStudents(ifile)
   makePdf(students, headerLeft = headerLeft,
-          headerCenter = headerCenter, pageSize = paper,
-          fileName = ofile)
+          headerCenter = headerCenter, date = date, footer = footer,
+          pageSize = paper, fileName = ofile, fontFamily = fontFamily)
