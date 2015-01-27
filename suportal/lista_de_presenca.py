@@ -214,7 +214,7 @@ def parsePaper(paper):
     usage(2)
 
 def usage(exitStatus = 0):
-  print >> sys.stderr, "Usage: lista.py [-i ifile] [-o outputfile]"
+  print >> sys.stderr, "Usage: lista.py [-i inputfile] [-o outputfile]"
   print >> sys.stderr, "                [-l header-left] [-c header-center]"
   print >> sys.stderr, "                [-p paper]"
   print >> sys.stderr, "       paper is one of A4 or A3"
