@@ -36,22 +36,27 @@ except:
   sys.stderr.write("Tem certeza de que é uma planilha do OpenOffice?\n")
   exit(1)
 
-portal = PortalDoProfessor()
-portal.debug = True
+portal = None
 try:
-  portal.login(usuario, getpass("senha: "))
+  portal = PortalDoProfessor(usuario, getpass("senha: "))
 
-  turma = portal.getTurma(codigoTurma)
+  turmas = portal.getTurmas(codigoTurma)
 
   for aula in cp.aulas.values():
     print "lançando aula " + repr(aula)
     try:
-      portal.lancaAula(aula, turma)
+      portal.lancaAula(aula, turmas[0])
     except:
       print >> sys.stderr, "ERRO: aula " + repr(aula) + " pode não " + \
                            "ter sido lançada!"
 
   portal.logout()
+except KeyError:
+  sys.stderr.write("Turma %s inexistente.\n" % codigoTurma)
+  exit(1)
 except PasswordException:
-  print >> sys.stderr, "Senha incorreta ou usuário " + usuario + \
-                       " inexistente"
+  print >> sys.stderr, "Senha incorreta ou usuário %s inexistente." % usuario
+finally:
+  if portal is not None:
+    portal.logout()
+    sys.stderr.write("logged out.\n")

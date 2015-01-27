@@ -70,27 +70,31 @@ class PortalDoProfessor:
   def loadTurmas(self):
     self.br.open(PortalDoProfessor.PORTAL_BASE_HREF +
                  "diario/turmas.html?todas=1");
-    self.turmas = {}
+    self.turmas = []
     for link in self.br.links(url_regex="turma.html"):
       codigo = link.text
       idturma = link.url.split("=")[1]
       turma = Turma(codigo, idturma)
       turma.linkLancarNova = None
       turma.linksLancarAula = None
-      self.turmas[codigo] = turma
+      self.turmas.append(turma)
 
-  def getTurma(self, codigo):
+  def getTurmas(self, codigo):
     if self.turmas is None:
       self.loadTurmas()
 
-    if codigo not in self.turmas:
-      return None
+    turmas = []
 
-    turma = self.turmas[codigo]
-    if turma.alunos is None:
-      self.carregaDadosTurma(turma)
+    for turma in self.turmas:
+      if codigo == turma.codigo:
+        turmas.append(turma)
+        if turma.alunos is None:
+          self.carregaDadosTurma(turma)
 
-    return turma
+    if not turmas:
+      raise KeyError("Código de turma inexistente")
+
+    return turmas
 
   def carregaDadosTurma(self, turma):
     response = self.br.open(PortalDoProfessor.PORTAL_BASE_HREF +

@@ -28,15 +28,18 @@ except (IndexError, getopt.GetoptError):
   sys.stderr.write("     Ex. NBBC1499SA.\n");
   exit(1)
 
+portal = None
+
 try:
-  portal = PortalDoProfessor(usuario, getpass("senha: "))
-  turma = portal.getTurma(codigoTurma)
-  if turma is not None:
-    for aluno in sorted(turma.alunos.values(), key=lambda al:al.nome):
-      print aluno.ra + "\t" + aluno.nome
-  else:
-    sys.stderr.write("Turma %s inexistente.\n" % codigoTurma)
-    exit(1)
+  password = getpass("senha: ")
+  sys.stderr.write("logging in.\n")
+  portal = PortalDoProfessor(usuario, password)
+  turmas = portal.getTurmas(codigoTurma)
+  for aluno in sorted(turmas[0].alunos.values(), key=lambda al:al.nome):
+    print aluno.ra + "\t" + aluno.nome
+except KeyError:
+  sys.stderr.write("Turma %s inexistente.\n" % codigoTurma)
+  exit(1)
 except PasswordException:
   sys.stderr.write("Senha incorreta ou usuário %s inexistente.\n" %
                    usuario)
@@ -44,5 +47,7 @@ except PasswordException:
 except:
   sys.stderr.write("Não pude fazer login no portal.\n")
   exit(3)
-
-
+finally:
+  if portal is not None:
+    portal.logout()
+    sys.stderr.write("logged out.\n")
