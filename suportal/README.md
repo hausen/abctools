@@ -20,3 +20,8 @@ A planilha plano de aulas deve ter as colunas "dia"
 (no formato dd/mm/aaaa), "aula" (descrição da aula),
 "inicio" (horário de inicio da aula) e "horas"
 (quantidade de horas de aula).
+
+Instalação
+----
+
+    pip install mechanize beautifulsoup reportlab odfpy
