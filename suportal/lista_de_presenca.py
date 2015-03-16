@@ -49,7 +49,7 @@ def drawFooter(p, center = ""):
   pageCenter = (p.margin.left + p.pageWidth - p.margin.right)/2
   footerTop = p.margin.bottom - 1.2*p.fontSize
   p.drawCentredString(pageCenter, footerTop, center) 
-  footerTop -= 2*p.fontSize
+  footerTop -= 1.6*p.fontSize #aqui
   p.drawCentredString(pageCenter, footerTop, 
                       "Página %d/%d" % (p.pageNumber, p.totalPages))
 
