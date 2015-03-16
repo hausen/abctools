@@ -236,7 +236,6 @@ Nome: \hrulefill{ }RA: \rule{4cm}{0.4pt}
 	\ADDPOINTS{#1}%
 	{(\PRINTPOINTS{#1} pt){ }}%
 \fi%
-\let\par\relax%
 }% end first part of question environment
 {% last part of question environment
 \vspace{\question@spacing}%
@@ -265,7 +264,6 @@ Nome: \hrulefill{ }RA: \rule{4cm}{0.4pt}
 		}%
 	\fi%
 \fi%
-\let\par\relax%
 }% end first part of subquestion environment
 {% last part of subquestion environment
 }% end last part of subquestion environment
