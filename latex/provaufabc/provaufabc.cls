@@ -225,7 +225,7 @@ Nome: \hrulefill{ }RA: \rule{4cm}{0.4pt}
 {% first part of question environment
 
 \@par
-\noindent \stepcounter{the@question}%
+\noindent \setcounter{the@subquestion}{0}\stepcounter{the@question}%
 \fbox{\textbf{Quest\~ao \arabic{the@question}}}{ }%
 \def\@currentlabel{\arabic{the@question}}%
 %
