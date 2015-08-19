@@ -9,7 +9,7 @@ from BeautifulSoup import BeautifulSoup
 import cookielib 
 import mechanize
 import re
-import sys 
+import sys, traceback 
 import urllib2
 from Aula import TipoAula, Aula
 from Aluno import Aluno
@@ -19,6 +19,22 @@ from libportal import strDateCanonicalize
 class PortalDoProfessor:
   PORTAL_BASE_HREF="http://portal.ufabc.edu.br:8080/professor/"
   PORTAL_ENCODING="ISO-8859-1"
+  CONCEITOS = {
+    'A': '11',
+    'a': '11',
+    'B': '12',
+    'b': '12',
+    'C': '13',
+    'c': '13',
+    'D': '14',
+    'd': '14',
+    'F': '15',
+    'f': '15',
+    'O': '16',
+    'o': '16',
+    'I': '18',
+    'i': '18'
+  }
 
   def __init__(self, username=None, password=None):
     self.debug = False
@@ -118,6 +134,52 @@ class PortalDoProfessor:
       novoAluno = Aluno(ra, nome=nome, idaluno=idaluno,
                         turma=turma, curso=curso)
       turma.alunos[ra] = novoAluno        
+
+  def lancaConceito(self, idaluno, conceitos, turma, control):
+    for ra, aluno in turma.alunos.iteritems():
+      ra = int(ra)
+      if (aluno.idaluno == idaluno):
+        #print >> sys.stderr, "Aluno %s (%d) tem conceito %s" % \
+        #                     (aluno.nome, ra, conceitos[ra].upper())
+        control.get(PortalDoProfessor.CONCEITOS[conceitos[ra]]).selected = True
+        return
+    print >> sys.stderr, idaluno
+    raise Exception()
+
+  def lancaFaltas(self, idaluno, faltas, turma, control):
+    for ra, aluno in turma.alunos.iteritems():
+      ra = int(ra)
+      if (aluno.idaluno == idaluno):
+        #print >> sys.stderr, "Aluno %s (%d) faltou %d horas" % \
+        #                     (aluno.nome, ra, faltas[ra])
+        control.value = str(faltas[ra])
+        return
+    raise Exception()
+
+  def lancaConceitosFaltas(self, conceitos, faltas, turma):
+    response = self.br.open(PortalDoProfessor.PORTAL_BASE_HREF +
+                            "notas/formulario.html?turma=" + turma.idturma)
+    self.br.form = list(self.br.forms())[0]
+    naolancou = []
+
+    for control in self.br.form.controls:
+      parts = control.name.split('.')
+      if len(parts) != 3 or (parts[0] != 'nota' and parts[0] != 'faltas'):
+        continue
+      idaluno = parts[1]
+      try:
+        if parts[0] == 'nota':
+          self.lancaConceito(idaluno, conceitos, turma, control)
+        else:
+          self.lancaFaltas(idaluno, faltas, turma, control)
+      except:
+        #traceback.print_exc(file=sys.stdout)
+        naolancou.append(idaluno)
+
+    if naolancou:
+      print >> sys.stderr, "AVISO: %d alunos não lançados na turma %s." % \
+                           (len(naolancou)/2, turma.codigo)
+    response = self.br.submit()
 
   def lancaAula(self, aula, turma):
     if turma.linkLancarNova is None:

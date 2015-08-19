@@ -34,7 +34,7 @@ try:
 except:
   sys.stderr.write("Erro ao ler %s.\n" % nomeArq)
   sys.stderr.write("Tem certeza de que é uma planilha do OpenOffice?\n")
-  #traceback.print_exc(file=sys.stdout)
+#  traceback.print_exc(file=sys.stdout)
   exit(1)
 
 portal = None
@@ -43,13 +43,12 @@ try:
 
   turmas = portal.getTurmas(codigoTurma)
 
-  for aula in cp.aulas.values():
-    print "lançando aula " + repr(aula)
-    try:
-      portal.lancaAula(aula, turmas[0])
-    except:
-      print >> sys.stderr, "ERRO: aula " + repr(aula) + " pode não " + \
-                           "ter sido lançada!"
+  try:
+    portal.lancaConceitosFaltas(cp.conceitos, cp.faltas, turmas[0])
+  except:
+    print >> sys.stderr, "ERRO: conceitos da turma " + codigoTurma + \
+                         " podem não ter sido lançados!"
+    traceback.print_exc(file=sys.stdout)
 
   portal.logout()
 except KeyError:
