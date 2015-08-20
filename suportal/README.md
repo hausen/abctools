@@ -3,7 +3,12 @@ Suportal - Suporte ao Portal do Professor
 
 As planilhas a serem usadas devem ser criadas com o
 OpenOffice/LibreOffice/BrOffice e devem ser gravadas
-no formato ODS.
+no formato ODS. Planilhas criadas em outros editores
+(como, por exemplo, no Google Documents) devem ser
+abertas e regravadas no OpenOffice antes de serem
+usadas.
+
+Para cada turma, deve-se usar uma planilha diferente.
 
 Para lançamento de notas, o arquivo deve deve ter uma
 planilha com o nome "Conceitos." A primeira linha dessa
@@ -20,6 +25,32 @@ A planilha plano de aulas deve ter as colunas "dia"
 (no formato dd/mm/aaaa), "aula" (descrição da aula),
 "inicio" (horário de inicio da aula) e "horas"
 (quantidade de horas de aula).
+
+Scripts
+----
+
+    lanca_conceitos.py -u usuario CodigoTurma Planilha.ods
+
+Faz login no portal com o usuário especificado, lê a planilha
+e lança os conceitos.
+
+    lanca_presencas.py -u usuario CodigoTurma planilha.ods
+
+Faz login no portal com o usuário especificado, lê a planilha
+e preenche o diário de classe com as aulas e presenças de
+alunos.
+
+    lista_de_alunos.py -u usuario CodigoTurma > arquivo.csv
+
+Obtém a lista de alunos, no formato CSV separado por tabulação,
+com o RA na primeira coluna e o nome na segunda coluna.
+
+    lista_de_presenca.py -l "Descrição da turma" -p {a4,a3} -o lista.pdf \
+                         [-d "data"] < arquivo.csv
+
+Gera uma lista de presença, no formato PDF, para os alunos
+assinarem a partir do arquivo CSV. Se o parâmetro data não
+for fornecido, será impressa a data atual.
 
 Instalação
 ----
